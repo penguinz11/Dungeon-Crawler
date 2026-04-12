@@ -1,20 +1,24 @@
-# Variable for the compiler
 CC = gcc
-
-# Compilation flags (-Wall shows warnings, -lncurses links the library)
-CFLAGS = -Wall
+CFLAGS = -Wall -Wextra -g
 LIBS = -lncurses
 
-# The name of your final executable
-TARGET = dungeon_crawler
-
-# All source files
+# Targets and Sources
+TARGET = dungeon
 SRCS = main.c player.c map.c enemy.c
+OBJS = $(SRCS:.c=.o)
 
-# The default rule
-all:
-	$(CC) $(SRCS) -o $(TARGET) $(CFLAGS) $(LIBS)
+all: $(TARGET)
 
-# Rule to clean up the folder
+$(TARGET): $(OBJS)
+	$(CC) $(OBJS) -o $(TARGET) $(LIBS)
+
+# This rule compiles .c files into .o (object) files
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
 clean:
-	rm -f $(TARGET)
+	rm -f $(TARGET) $(OBJS)
+
+# To run the game quickly: make run
+run: all
+	./$(TARGET)

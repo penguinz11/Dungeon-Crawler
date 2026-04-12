@@ -1,53 +1,64 @@
 #include <ncurses.h>
 #include "player.h"
 #include "map.h"
+#include "enemy.h"
 
 int main() {
-    // 1. Setup ncurses
-    initscr();            // Start ncurses mode
-    cbreak();             // Disable line buffering
-    noecho();             // Don't show pressed keys on screen
-    curs_set(0);          // Hide the blinking cursor
-    keypad(stdscr, TRUE); // Enable special keys (like arrows)
-    start_color();        // Enable color functionality
+    // Standard setup...
+    initscr();
+    cbreak();
+    noecho();
+    curs_set(0);
+    keypad(stdscr, TRUE);
+    start_color();
 
-    // 2. Define Colors
-    init_pair(1, COLOR_CYAN, COLOR_BLACK);  // Player color
-    init_pair(2, COLOR_YELLOW, COLOR_BLACK); // Wall color
-    init_pair(3, COLOR_RED, COLOR_BLACK);    // Enemy color (for later)
+    // This tells getch() to only wait 50 milliseconds. 
+    // If no key is pressed, it returns ERR and moves on.
+    timeout(50); 
 
-    // 3. Initialize Game Objects
+    // Use a dark grey or blue for a "dungeon" feel
+    start_color();
+    // Pair 1: Player (Cyan)
+    init_pair(1, COLOR_CYAN, COLOR_BLACK);
+    // Pair 2: Breakable Walls (Blue)
+    init_pair(2, COLOR_BLUE, COLOR_BLACK);
+    // Pair 3: Bedrock (White)
+    init_pair(3, COLOR_WHITE, COLOR_BLACK);
+    // Pair 4: The Attack Flash (Black on White)
+    init_pair(4, COLOR_BLACK, COLOR_WHITE);
+
     Map myMap;
     Player myPlayer;
-    
     init_map(&myMap);
-    init_player(&myPlayer, 10, 10); // Start player at Y=10, X=10
+    init_player(&myPlayer, 10, 10);
 
     int ch;
-    // 4. The Game Loop
-    while ((ch = getch()) != 'q') { // Press 'q' to quit
-        // Clear the screen for the new frame
-        erase();
+    while (1) {
+        // 1. Get input (now non-blocking)
+        ch = getch();
 
-        // Handle Input
+        // 2. Process logic immediately
+        if (ch == 'q' || ch == 'Q') break;
+        
         if (ch == ' ') {
             player_attack(&myPlayer, &myMap);
-        } else {
+        } else if (ch != ERR) { 
+            // Only move if an actual key was pressed (ignores the timeout ERR)
             move_player(&myPlayer, ch, &myMap);
         }
 
-        // Draw Everything
-        draw_map(&myMap);
+        // 3. Render (Do this every loop for smoothness)
+        erase();
+        draw_map(&myMap, myPlayer.y, myPlayer.x);
         draw_player(&myPlayer);
-
-        // UI Info
+        
+        attron(COLOR_PAIR(1));
         mvprintw(0, 0, "HP: %d | WASD to Move | SPACE to Attack | Q to Quit", myPlayer.hp);
+        attroff(COLOR_PAIR(1));
 
-        // Refresh the physical screen
-        refresh();
+        refresh(); 
     }
 
-    // 5. Clean up and Close
     endwin();
     return 0;
 }

@@ -1,5 +1,6 @@
 #include <ncurses.h>
 #include "player.h"
+#include "map.h"
 
 void init_player(Player *p, int startY, int startX) {
     p->y = startY;
@@ -20,8 +21,8 @@ void move_player(Player *p, int input, Map *m) {
         case 'd': nextX++; break;
     }
 
-    // Collision check: only move if the tile is floor ('.') or an item
-    if (nextY >= 0 && nextY < HEIGHT && nextX >= 0 && nextX < WIDTH) {
+    if (nextY >= 0 && nextY < WORLD_HEIGHT && nextX >= 0 && nextX < WORLD_WIDTH) {
+        // Only move if it's a floor tile (keeps us out of Walls and Bedrock)
         if (m->grid[nextY][nextX] == '.') {
             p->y = nextY;
             p->x = nextX;
@@ -30,24 +31,48 @@ void move_player(Player *p, int input, Map *m) {
 }
 
 void player_attack(Player *p, Map *m) {
-    // Look at all 8 squares around the player
+    // 1. Setup camera offset logic for the visual flash
+    int startY = p->y - (VIEW_HEIGHT / 2);
+    int startX = p->x - (VIEW_WIDTH / 2);
+
+    if (startY < 0) startY = 0;
+    if (startX < 0) startX = 0;
+    if (startY > WORLD_HEIGHT - VIEW_HEIGHT) startY = WORLD_HEIGHT - VIEW_HEIGHT;
+    if (startX > WORLD_WIDTH - VIEW_WIDTH) startX = WORLD_WIDTH - VIEW_WIDTH;
+
+    // 2. Loop through the 8 tiles around the player
     for (int y = p->y - 1; y <= p->y + 1; y++) {
         for (int x = p->x - 1; x <= p->x + 1; x++) {
-            // Don't attack yourself
             if (y == p->y && x == p->x) continue;
 
-            // In a real game, you'd check if an enemy is at m->grid[y][x]
-            // For now, let's "flash" the area to show the attack happened
-            mvaddch(y, x, '*'); 
+            if (y >= 0 && y < WORLD_HEIGHT && x >= 0 && x < WORLD_WIDTH) {
+                // LOGIC: Break ONLY blue walls (#), ignore bedrock (X)
+                if (m->grid[y][x] == '#') {
+                    m->grid[y][x] = '.';
+                }
+            }
+
+            // VISUALS: Draw the attack flash with symmetry (* 2)
+            attron(COLOR_PAIR(4)); 
+            mvaddch(y - startY + 1, (x - startX) * 2, '*');
+            attroff(COLOR_PAIR(4));
         }
     }
     refresh();
-    // Short delay so the user sees the "flash" of the attack
-    napms(50); 
+    napms(50); // Small delay so the flash is visible
 }
 
 void draw_player(Player *p) {
+    int startY = p->y - (VIEW_HEIGHT / 2);
+    int startX = p->x - (VIEW_WIDTH / 2);
+
+    if (startY < 0) startY = 0;
+    if (startX < 0) startX = 0;
+    if (startY > WORLD_HEIGHT - VIEW_HEIGHT) startY = WORLD_HEIGHT - VIEW_HEIGHT;
+    if (startX > WORLD_WIDTH - VIEW_WIDTH) startX = WORLD_WIDTH - VIEW_WIDTH;
+
     attron(COLOR_PAIR(1) | A_BOLD);
-    mvaddch(p->y, p->x, p->symbol);
+    // Note the symmetry: (x * 2)
+    mvaddch(p->y - startY + 1, (p->x - startX) * 2, p->symbol);
     attroff(COLOR_PAIR(1) | A_BOLD);
 }
