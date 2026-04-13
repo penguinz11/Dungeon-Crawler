@@ -10,7 +10,7 @@ typedef struct {
     char symbol;
 } Player;
 
-void init_player(Player *p, int startY, int startX);
+void init_player(Player *p, int y, int x);
 void move_player(Player *p, int input, Map *m);
 void player_attack(Player *p, Map *m); // The "Spacebar" AOE attack
 void draw_player(Player *p);

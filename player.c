@@ -1,10 +1,11 @@
 #include <ncurses.h>
 #include "player.h"
 #include "map.h"
+#include "cam.h"
 
-void init_player(Player *p, int startY, int startX) {
-    p->y = startY;
-    p->x = startX;
+void init_player(Player *p, int y, int x) {
+    p->y = y;
+    p->x = x;
     p->hp = 100;
     p->max_hp = 100;
     p->symbol = '@';
@@ -31,15 +32,6 @@ void move_player(Player *p, int input, Map *m) {
 }
 
 void player_attack(Player *p, Map *m) {
-    // 1. Setup camera offset logic for the visual flash
-    int startY = p->y - (VIEW_HEIGHT / 2);
-    int startX = p->x - (VIEW_WIDTH / 2);
-
-    if (startY < 0) startY = 0;
-    if (startX < 0) startX = 0;
-    if (startY > WORLD_HEIGHT - VIEW_HEIGHT) startY = WORLD_HEIGHT - VIEW_HEIGHT;
-    if (startX > WORLD_WIDTH - VIEW_WIDTH) startX = WORLD_WIDTH - VIEW_WIDTH;
-
     // 2. Loop through the 8 tiles around the player
     for (int y = p->y - 1; y <= p->y + 1; y++) {
         for (int x = p->x - 1; x <= p->x + 1; x++) {
@@ -63,14 +55,7 @@ void player_attack(Player *p, Map *m) {
 }
 
 void draw_player(Player *p) {
-    int startY = p->y - (VIEW_HEIGHT / 2);
-    int startX = p->x - (VIEW_WIDTH / 2);
-
-    if (startY < 0) startY = 0;
-    if (startX < 0) startX = 0;
-    if (startY > WORLD_HEIGHT - VIEW_HEIGHT) startY = WORLD_HEIGHT - VIEW_HEIGHT;
-    if (startX > WORLD_WIDTH - VIEW_WIDTH) startX = WORLD_WIDTH - VIEW_WIDTH;
-
+    clamp_cam(p->y, p->x, WORLD_HEIGHT, WORLD_WIDTH);
     attron(COLOR_PAIR(1) | A_BOLD);
     // Note the symmetry: (x * 2)
     mvaddch(p->y - startY + 1, (p->x - startX) * 2, p->symbol);

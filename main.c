@@ -32,6 +32,16 @@ int main() {
     init_map(&myMap);
     init_player(&myPlayer, 10, 10);
 
+    //enemies
+    int enemy_count = 10;
+    enemy enemies[enemy_count];
+    
+    //initialising enemies
+    for(int i = 0;i < enemy_count;i++) {
+        // make proper spawning later
+        init_enemy(&enemies[i], 15 + i, 15 + i);
+    }
+
     int ch;
     while (1) {
         // 1. Get input (now non-blocking)
@@ -49,9 +59,16 @@ int main() {
 
         // 3. Render (Do this every loop for smoothness)
         erase();
-        draw_map(&myMap, myPlayer.y, myPlayer.x);
-        draw_player(&myPlayer);
+        draw_map(&myMap);
         
+        //draw enemies
+        for(int i = 0;i < enemy_count; i++) {
+            draw_enemy(&enemies[i]);
+        }
+        
+        //draw player
+        draw_player(&myPlayer);
+
         attron(COLOR_PAIR(1));
         mvprintw(0, 0, "HP: %d | WASD to Move | SPACE to Attack | Q to Quit", myPlayer.hp);
         attroff(COLOR_PAIR(1));

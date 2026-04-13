@@ -1,6 +1,7 @@
 #include <ncurses.h>
 #include <stdlib.h>
 #include "map.h"
+#include "cam.h"
 
 void init_map(Map *m) {
     for (int y = 0; y < WORLD_HEIGHT; y++) {
@@ -23,15 +24,7 @@ void init_map(Map *m) {
     m->grid[10][10] = '.'; m->grid[10][11] = '.'; m->grid[11][10] = '.';
 }
 
-void draw_map(Map *m, int playerY, int playerX) {
-    int startY = playerY - (VIEW_HEIGHT / 2);
-    int startX = playerX - (VIEW_WIDTH / 2);
-
-    if (startY < 0) startY = 0;
-    if (startX < 0) startX = 0;
-    if (startY > WORLD_HEIGHT - VIEW_HEIGHT) startY = WORLD_HEIGHT - VIEW_HEIGHT;
-    if (startX > WORLD_WIDTH - VIEW_WIDTH) startX = WORLD_WIDTH - VIEW_WIDTH;
-
+void draw_map(Map *m) {
     for (int y = 0; y < VIEW_HEIGHT; y++) {
         for (int x = 0; x < VIEW_WIDTH; x++) {
             char tile = m->grid[startY + y][startX + x];
