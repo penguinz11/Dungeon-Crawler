@@ -6,8 +6,8 @@
 void init_enemy(enemy *e, int y, int x) {
     e->x = x;
     e->y = y;
-    e->hp = 5;
     e->max_hp = 5;
+    e->hp = e->max_hp;
     e->symbol = 'E';
 }
 
@@ -20,5 +20,14 @@ void draw_enemy(enemy *e) {
         mvaddch(ey + 1, (ex) * 2, e->symbol);
         attroff(COLOR_PAIR(1) | A_BOLD);
     }
+}
 
+void damage_enemy(enemy *e, int damage) {
+    e->hp -= damage;
+    if(e->hp <= 0) {
+        //remove enemy from screen
+        e->x = -1;
+        e->y = -1;
+    }
+    //implement knockback
 }

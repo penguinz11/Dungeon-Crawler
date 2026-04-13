@@ -6,8 +6,9 @@
 void init_player(Player *p, int y, int x) {
     p->y = y;
     p->x = x;
-    p->hp = 100;
     p->max_hp = 100;
+    p->hp = p->max_hp;
+    p->melee_damage = 1;
     p->symbol = '@';
 }
 
@@ -29,29 +30,6 @@ void move_player(Player *p, int input, Map *m) {
             p->x = nextX;
         }
     }
-}
-
-void player_attack(Player *p, Map *m) {
-    // 2. Loop through the 8 tiles around the player
-    for (int y = p->y - 1; y <= p->y + 1; y++) {
-        for (int x = p->x - 1; x <= p->x + 1; x++) {
-            if (y == p->y && x == p->x) continue;
-
-            if (y >= 0 && y < WORLD_HEIGHT && x >= 0 && x < WORLD_WIDTH) {
-                // LOGIC: Break ONLY blue walls (#), ignore bedrock (X)
-                if (m->grid[y][x] == '#') {
-                    m->grid[y][x] = '.';
-                }
-            }
-
-            // VISUALS: Draw the attack flash with symmetry (* 2)
-            attron(COLOR_PAIR(4)); 
-            mvaddch(y - startY + 1, (x - startX) * 2, '*');
-            attroff(COLOR_PAIR(4));
-        }
-    }
-    refresh();
-    napms(50); // Small delay so the flash is visible
 }
 
 void draw_player(Player *p) {
