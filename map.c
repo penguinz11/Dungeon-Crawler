@@ -10,11 +10,7 @@ void init_map(Map *m) {
             if (y == 0 || y == WORLD_HEIGHT - 1 || x == 0 || x == WORLD_WIDTH - 1) {
                 m->grid[y][x] = 'X';
             } 
-            // 2. Random Breakable Walls (20% density)
-            else if (rand() % 100 < 20) {
-                m->grid[y][x] = '#';
-            } 
-            // 3. Floor
+            // 2. Floor
             else {
                 m->grid[y][x] = '.';
             }
@@ -34,10 +30,6 @@ void draw_map(Map *m) {
                 attron(COLOR_PAIR(3) | A_BOLD); // White Bedrock
                 mvaddch(y + 1, x * 2, tile);
                 attroff(COLOR_PAIR(3) | A_BOLD);
-            } else if (tile == '#') {
-                attron(COLOR_PAIR(2)); // Blue Walls
-                mvaddch(y + 1, x * 2, tile);
-                attroff(COLOR_PAIR(2));
             } else {
                 attron(A_DIM); // Dim Floor dots
                 mvaddch(y + 1, x * 2, '.');
