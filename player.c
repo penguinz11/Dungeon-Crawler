@@ -10,6 +10,9 @@ void init_player(Player *p, int y, int x) {
     p->hp = p->max_hp;
     p->melee_damage = 1;
     p->symbol = '@';
+    p->xp = 0;
+    p->xp_cap = 10;
+    p->level = 1;
 }
 
 void move_player(Player *p, int input, Map *m) {
@@ -38,4 +41,17 @@ void draw_player(Player *p) {
     // Note the symmetry: (x * 2)
     mvaddch(p->y - startY + 1, (p->x - startX) * 2, p->symbol);
     attroff(COLOR_PAIR(1) | A_BOLD);
+}
+
+void gain_xp(Player *p) {
+    p->xp++;
+
+    //level up player
+    if(p->xp >= p->xp_cap) {
+        p->xp -= p->xp_cap;
+        p->xp_cap+=2;
+        p->level++;
+        //increase damage
+        p->melee_damage++;
+    }
 }

@@ -5,14 +5,16 @@
 #include "cam.h"
 #include <stdlib.h>
 
-void player_melee_attack(Player *p, enemy enemies[], int enemy_count) {
+void player_melee_attack(Player *p, enemy *enemies, int enemy_count) {
     //check the enemies that are in range of the player
     for(int i = 0; i < enemy_count;i++) {
         int dx = abs(enemies[i].x - p->x);
         int dy = abs(enemies[i].y - p->y);
 
         if(dx <= 1 && dy <= 1) {
-            damage_enemy(&enemies[i], p->melee_damage);
+            if(damage_enemy(&enemies[i], p->melee_damage) == 1) {
+                gain_xp(p);
+            }
         }
     }
 

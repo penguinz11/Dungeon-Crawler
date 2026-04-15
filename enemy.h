@@ -12,7 +12,7 @@ typedef struct {
 
 void init_enemy(enemy *e, int y, int x);
 void move_enemy(enemy *e);
-void damage_enemy(enemy *e, int damage);
+int damage_enemy(enemy *e, int damage);
 void enemy_attack(enemy *e, Player *p);
 void draw_enemy(enemy *e);
 

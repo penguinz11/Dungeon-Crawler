@@ -34,7 +34,7 @@ int main() {
     init_player(&myPlayer, 10, 10);
 
     //enemies
-    int enemy_count = 10;
+    int enemy_count = 12;
     enemy enemies[enemy_count];
     
     //initialising enemies
@@ -52,7 +52,7 @@ int main() {
         if (ch == 'q' || ch == 'Q') break;
         
         if (ch == ' ') {
-            player_melee_attack(&myPlayer, &enemies, enemy_count);
+            player_melee_attack(&myPlayer, enemies, enemy_count);
         } else if (ch != ERR) { 
             // Only move if an actual key was pressed (ignores the timeout ERR)
             move_player(&myPlayer, ch, &myMap);
@@ -71,7 +71,7 @@ int main() {
         draw_player(&myPlayer);
 
         attron(COLOR_PAIR(1));
-        mvprintw(0, 0, "HP: %d | WASD to Move | SPACE to MELEE Attack | Q to Quit", myPlayer.hp);
+        mvprintw(0, 0, "HP: %d | xp = %d / %d | level = %d | WASD to Move | SPACE to MELEE Attack | Q to Quit", myPlayer.hp, myPlayer.xp, myPlayer.xp_cap, myPlayer.level);
         attroff(COLOR_PAIR(1));
 
         refresh(); 

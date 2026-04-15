@@ -1,7 +1,7 @@
 # Dungeon-Crawler
 
 # Objective 
-Move your player around the map, kill all the enemies and find the exit to clear the level.
+Move your player around the dungeon, kill all the enemies and find the exit to finish the game.
 
 # Components 
 1. Map (map.c)
