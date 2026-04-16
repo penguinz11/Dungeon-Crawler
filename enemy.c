@@ -34,3 +34,12 @@ int damage_enemy(enemy *e, int damage) {
     //implement knockback
     return 0;
 }
+
+int is_enemy_at(enemy *enemies, int count, int x, int y) {
+    for(int i=0; i<count; i++)
+    {
+        if(enemies[i].x == x && enemies[i].y == y)
+            return 1;
+    }
+    return 0;
+}

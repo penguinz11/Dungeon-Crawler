@@ -1,5 +1,6 @@
 #include <ncurses.h>
 #include <stdlib.h>
+#include <time.h>
 #include "player.h"
 #include "map.h"
 #include "enemy.h"
@@ -27,6 +28,8 @@ int main() {
     init_pair(3, COLOR_WHITE, COLOR_BLACK);
     //pair 4: the attack flash (Black on White)
     init_pair(4, COLOR_BLACK, COLOR_WHITE);
+
+    srand(time(NULL));
 
     Map myMap;
     Player myPlayer;

@@ -13,7 +13,7 @@ $(TARGET): $(OBJS)
 	$(CC) $(OBJS) -o $(TARGET) $(LIBS)
 
 # This rule compiles .c files into .o (object) files
-%.o: %.c
+%.o: %.c %.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
