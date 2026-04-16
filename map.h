@@ -4,10 +4,21 @@
 #define WORLD_HEIGHT 30
 #define WORLD_WIDTH 80
 
+#define MAX_ROOMS 15
+#define MIN_ROOM_SIZE 4
+
+typedef struct {
+    int x, y, w, h;
+} Room;
+
 typedef struct {
     char grid[WORLD_HEIGHT][WORLD_WIDTH];
+    Room rooms[MAX_ROOMS];
+    int room_count;
 } Map;
 
+void connect_points(Map *m, int x1, int y1, int x2, int y2);
+void split_node(Map *m, int x, int y, int w, int h, int depth);
 void init_map(Map *m);
 void draw_map(Map *m);
 

@@ -1,11 +1,12 @@
 #include <ncurses.h>
+#include <stdlib.h>
 #include "player.h"
 #include "map.h"
 #include "enemy.h"
 #include "combat.h"
 
 int main() {
-    // Standard setup...
+    //standard setup
     initscr();
     cbreak();
     noecho();
@@ -13,34 +14,39 @@ int main() {
     keypad(stdscr, TRUE);
     start_color();
 
-    // This tells getch() to only wait 50 milliseconds. 
-    // If no key is pressed, it returns ERR and moves on.
+    //this tells getch() to only wait 50 milliseconds. 
+    //if no key is pressed, it returns ERR and moves on.
     timeout(50); 
 
-    // Use a dark grey or blue for a "dungeon" feel
     start_color();
-    // Pair 1: Player (Cyan)
+    //pair 1: player (Cyan)
     init_pair(1, COLOR_CYAN, COLOR_BLACK);
-    // Pair 2: Breakable Walls (Blue)
+    //pair 2: breakable walls (Blue)
     init_pair(2, COLOR_BLUE, COLOR_BLACK);
-    // Pair 3: Bedrock (White)
+    //pair 3: bedrock (White)
     init_pair(3, COLOR_WHITE, COLOR_BLACK);
-    // Pair 4: The Attack Flash (Black on White)
+    //pair 4: the attack flash (Black on White)
     init_pair(4, COLOR_BLACK, COLOR_WHITE);
 
     Map myMap;
     Player myPlayer;
     init_map(&myMap);
-    init_player(&myPlayer, 10, 10);
 
     //enemies
     int enemy_count = 12;
     enemy enemies[enemy_count];
-    
-    //initialising enemies
-    for(int i = 0;i < enemy_count;i++) {
-        // make proper spawning later
-        init_enemy(&enemies[i], 15 + i, 15 + i);
+
+    //spawn player in the first generated room
+    int start_y = myMap.rooms[0].y + (myMap.rooms[0].h / 2);
+    int start_x = myMap.rooms[0].x + (myMap.rooms[0].w / 2);
+    init_player(&myPlayer, start_y, start_x);
+
+    //do the same for enemies but pick random rooms
+    for(int i = 0; i < enemy_count; i++) {
+        int r = rand() % myMap.room_count;
+        int ey = myMap.rooms[r].y + (rand() % myMap.rooms[r].h);
+        int ex = myMap.rooms[r].x + (rand() % myMap.rooms[r].w);
+        init_enemy(&enemies[i], ey, ex);
     }
 
     int ch;
