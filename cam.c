@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include "cam.h"
 
+int VIEW_HEIGHT;
+int VIEW_WIDTH;
 int startX, startY;
 
 void clamp_cam(int playerY, int playerX,int worldHeight,int worldWidth) {

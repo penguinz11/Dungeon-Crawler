@@ -19,10 +19,8 @@ void connect_points(Map *m, int x1, int y1, int x2, int y2) {
 }
 
 void split_node(Map *m, int x, int y, int w, int h, int depth) {
-    //if we've reached max depth or the area is too small, carve a room
     if (depth <= 0 || (w < MIN_ROOM_SIZE * 2 + 2 && h < MIN_ROOM_SIZE * 2 + 2)) {
         if (m->room_count < MAX_ROOMS) {
-            //create a room smaller than the available partition (the "node")
             int rw = (rand() % (w - MIN_ROOM_SIZE)) + MIN_ROOM_SIZE - 2;
             int rh = (rand() % (h - MIN_ROOM_SIZE)) + MIN_ROOM_SIZE - 2;
             int rx = x + (rand() % (w - rw - 1)) + 1;
@@ -30,14 +28,12 @@ void split_node(Map *m, int x, int y, int w, int h, int depth) {
 
             m->rooms[m->room_count] = (Room){rx, ry, rw, rh};
 
-            //carve floor tiles
             for (int i = ry; i < ry + rh; i++) {
                 for (int j = rx; j < rx + rw; j++) {
                     m->grid[i][j] = '.';
                 }
             }
 
-            //connect to the previous room
             if (m->room_count > 0) {
                 Room prev = m->rooms[m->room_count - 1];
                 connect_points(m, rx + rw/2, ry + rh/2, prev.x + prev.w/2, prev.y + prev.h/2);
@@ -48,13 +44,12 @@ void split_node(Map *m, int x, int y, int w, int h, int depth) {
         return;
     }
 
-    //decide split direction
     int split_horiz = rand() % 2;
-    if (w > h * 1.5) split_horiz = 0; //force vertical if too wide
-    else if (h > w * 1.5) split_horiz = 1; //force horizontal if too tall
+    if (w > h * 1.5) split_horiz = 0;
+    else if (h > w * 1.5) split_horiz = 1;
 
     if (split_horiz) {
-        int split = (h / 2); //simple middle split, can be randomized
+        int split = (h / 2);
         split_node(m, x, y, w, split, depth - 1);
         split_node(m, x, y + split, w, h - split, depth - 1);
     } else {
@@ -66,42 +61,99 @@ void split_node(Map *m, int x, int y, int w, int h, int depth) {
 
 void init_map(Map *m) {
     m->room_count = 0;
-    //fill with walls first
     for (int y = 0; y < WORLD_HEIGHT; y++) {
         for (int x = 0; x < WORLD_WIDTH; x++) {
             m->grid[y][x] = 'X';
         }
     }
-    //start splitting the whole map (depth of 4 gives up to 16 partitions)
     split_node(m, 0, 0, WORLD_WIDTH, WORLD_HEIGHT, 4);
+
+    int max_dist = 0;
+    m->target_room = 0;
+    if (m->room_count > 1) {
+        Room start = m->rooms[0];
+        for (int i = 1; i < m->room_count; i++) {
+            Room r = m->rooms[i];
+            int dx = (r.x + r.w / 2) - (start.x + start.w / 2);
+            int dy = (r.y + r.h / 2) - (start.y + start.h / 2);
+            int dist = dx * dx + dy * dy;
+            if (dist > max_dist) {
+                max_dist = dist;
+                m->target_room = i;
+            }
+        }
+    }
+
+    // place door at farthest point in target room
+    if (m->room_count > 0) {
+        Room target = m->rooms[m->target_room];
+        Room start = m->rooms[0];
+        int start_cx = start.x + start.w / 2;
+        int start_cy = start.y + start.h / 2;
+        int max_dist = 0;
+        int door_y = target.y + target.h / 2;
+        int door_x = target.x + target.w / 2;
+        for (int yy = target.y; yy < target.y + target.h; yy++) {
+            for (int xx = target.x; xx < target.x + target.w; xx++) {
+                int dx = xx - start_cx;
+                int dy = yy - start_cy;
+                int dist = dx * dx + dy * dy;
+                if (dist > max_dist) {
+                    max_dist = dist;
+                    door_y = yy;
+                    door_x = xx;
+                }
+            }
+        }
+        m->door_y = door_y;
+        m->door_x = door_x;
+        // dont store door on grid, only draw it
+    }
 }
 
 void draw_map(Map *m) {
     for (int y = 0; y < VIEW_HEIGHT; y++) {
         for (int x = 0; x < VIEW_WIDTH; x++) {
-            //calculate coordinates in the actual world grid
+            // actual world coordinates for this view tile
             int worldY = startY + y;
             int worldX = startX + x;
 
-            //boundary check: only draw if within world limits
+            // skip tiles outside the world
             if (worldY >= 0 && worldY < WORLD_HEIGHT && worldX >= 0 && worldX < WORLD_WIDTH) {
                 char tile = m->grid[worldY][worldX];
 
                 if (tile == 'X') {
-                    //draw walls (bedrock/stone)
+                    // wall
                     attron(COLOR_PAIR(3) | A_BOLD); 
                     mvaddch(y + 1, x * 2, tile);
                     attroff(COLOR_PAIR(3) | A_BOLD);
+                } else if (worldY == m->door_y && worldX == m->door_x) {
+                    // door
+                    attron(COLOR_PAIR(2) | A_BOLD);
+                    mvaddch(y + 1, x * 2, 'D');
+                    attroff(COLOR_PAIR(2) | A_BOLD);
                 } else {
-                    //draw floor dots
+                    // floor
                     attron(A_DIM);
                     mvaddch(y + 1, x * 2, '.');
                     attroff(A_DIM);
                 }
             } else {
-                //draw empty space if the camera looks outside the world map
+                // blank outside the world
                 mvaddch(y + 1, x * 2, ' ');
             }
         }
     }
+
+    // draw map border
+    attron(COLOR_PAIR(3) | A_BOLD);
+    mvhline(1, 0, ACS_HLINE, VIEW_WIDTH * 2);
+    mvhline(VIEW_HEIGHT, 0, ACS_HLINE, VIEW_WIDTH * 2);
+    mvvline(1, 0, ACS_VLINE, VIEW_HEIGHT);
+    mvvline(1, VIEW_WIDTH * 2 - 1, ACS_VLINE, VIEW_HEIGHT);
+    mvaddch(1, 0, ACS_ULCORNER);
+    mvaddch(1, VIEW_WIDTH * 2 - 1, ACS_URCORNER);
+    mvaddch(VIEW_HEIGHT, 0, ACS_LLCORNER);
+    mvaddch(VIEW_HEIGHT, VIEW_WIDTH * 2 - 1, ACS_LRCORNER);
+    attroff(COLOR_PAIR(3) | A_BOLD);
 }

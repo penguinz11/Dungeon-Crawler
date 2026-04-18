@@ -27,7 +27,6 @@ void move_player(Player *p, int input, Map *m) {
     }
 
     if (nextY >= 0 && nextY < WORLD_HEIGHT && nextX >= 0 && nextX < WORLD_WIDTH) {
-        // Only move if it's a floor tile (keeps us out of Walls and Bedrock)
         if (m->grid[nextY][nextX] == '.') {
             p->y = nextY;
             p->x = nextX;
@@ -38,7 +37,6 @@ void move_player(Player *p, int input, Map *m) {
 void draw_player(Player *p) {
     clamp_cam(p->y, p->x, WORLD_HEIGHT, WORLD_WIDTH);
     attron(COLOR_PAIR(1) | A_BOLD);
-    // Note the symmetry: (x * 2)
     mvaddch(p->y - startY + 1, (p->x - startX) * 2, p->symbol);
     attroff(COLOR_PAIR(1) | A_BOLD);
 }
@@ -46,12 +44,10 @@ void draw_player(Player *p) {
 void gain_xp(Player *p) {
     p->xp++;
 
-    //level up player
     if(p->xp >= p->xp_cap) {
         p->xp -= p->xp_cap;
         p->xp_cap+=2;
         p->level++;
-        //increase damage
         p->melee_damage++;
     }
 }

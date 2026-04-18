@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 void player_melee_attack(Player *p, enemy *enemies, int enemy_count) {
-    //check the enemies that are in range of the player
+    // hit nearby enemies
     for(int i = 0; i < enemy_count;i++) {
         int dx = abs(enemies[i].x - p->x);
         int dy = abs(enemies[i].y - p->y);
@@ -18,7 +18,7 @@ void player_melee_attack(Player *p, enemy *enemies, int enemy_count) {
         }
     }
 
-    //visual flash
+    // flash effect
     for (int y = p->y - 1; y <= p->y + 1; y++) {
         for (int x = p->x - 1; x <= p->x + 1; x++) {
             attron(COLOR_PAIR(4)); 
@@ -27,5 +27,5 @@ void player_melee_attack(Player *p, enemy *enemies, int enemy_count) {
         }
     }
     refresh();
-    napms(50); // Small delay so the flash is visible
+    napms(50);
 }

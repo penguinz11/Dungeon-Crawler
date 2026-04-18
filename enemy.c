@@ -25,13 +25,10 @@ void draw_enemy(enemy *e) {
 int damage_enemy(enemy *e, int damage) {
     e->hp -= damage;
     if(e->hp <= 0) {
-        //remove enemy from screen
         e->x = -1;
         e->y = -1;
-        //return 1, to increase player xp;
         return 1;
     }
-    //implement knockback
     return 0;
 }
 
