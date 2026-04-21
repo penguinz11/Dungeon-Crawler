@@ -22,16 +22,17 @@ void move_player(Player *p, int input, Map *m) {
     int nextX = p->x;
 
     switch (input) {
-        case 'w': nextY--; break;
-        case 's': nextY++; break;
-        case 'a': nextX--; break;
-        case 'd': nextX++; break;
+        case 'w': case 'W': nextY--; break;
+        case 's': case 'S': nextY++; break;
+        case 'a': case 'A': nextX--; break;
+        case 'd': case 'D': nextX++; break;
     }
 
     if (nextY >= 0 && nextY < WORLD_HEIGHT && nextX >= 0 && nextX < WORLD_WIDTH) {
         if (m->grid[nextY][nextX] == '.' || m->grid[nextY][nextX] == 'R') {
             p->y = nextY;
             p->x = nextX;
+            m->explored[p->y][p->x] = 1;
         }
     }
 }

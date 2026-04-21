@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 void player_melee_attack(Player *p, enemy *enemies, int enemy_count) {
-    // hit nearby enemies
+    //hit nearby
     for(int i = 0; i < enemy_count;i++) {
         int dx = abs(enemies[i].x - p->x);
         int dy = abs(enemies[i].y - p->y);
@@ -18,7 +18,7 @@ void player_melee_attack(Player *p, enemy *enemies, int enemy_count) {
         }
     }
 
-    // flash effect
+    //flash effect
     for (int y = p->y - 1; y <= p->y + 1; y++) {
         for (int x = p->x - 1; x <= p->x + 1; x++) {
             attron(COLOR_PAIR(4)); 
@@ -31,6 +31,7 @@ void player_melee_attack(Player *p, enemy *enemies, int enemy_count) {
 }
 
 void try_to_damage_player(enemy *e, Player *p, int damage, Map *m) {
+    (void)m;//suppress warning
     int dx = abs(p->x - e->x);
     int dy = abs(p->y - e->y);
     if(dx <= 1 && dy <= 1) {
@@ -38,14 +39,8 @@ void try_to_damage_player(enemy *e, Player *p, int damage, Map *m) {
         if(p->hp <= 0) {
             //player death
         }
+        e->attack_timer = 10;//show attack effect
     }
-    e->attack_cooldown = 50;
+    e->attack_cooldown = 20;
     e->allowed_to_move = 1;
-    for(int i = -1; i <= 1; i++) {
-        for(int j = -1;j <= 1;j++) {
-            if(m->grid[e->y + i][e->x + j] == '^') {
-                m->grid[e->y + i][e->x + j] = '.';
-            }
-        }
-    }
 }

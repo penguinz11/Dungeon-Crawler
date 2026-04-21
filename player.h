@@ -3,7 +3,7 @@
 
 #include "map.h"
 
-struct enemy; // Forward declaration
+struct enemy; 
 
 typedef struct {
     int x, y;

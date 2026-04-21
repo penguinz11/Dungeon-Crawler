@@ -1,6 +1,8 @@
 #ifndef MAP_H
 #define MAP_H
 
+#include <stdbool.h>
+
 #define WORLD_HEIGHT 100
 #define WORLD_WIDTH 200
 
@@ -18,7 +20,7 @@ typedef struct {
     int room_count;
     int target_room;
     int door_y, door_x;
-    int explored[MAX_ROOMS];
+    bool explored[WORLD_HEIGHT][WORLD_WIDTH];
     int key_x, key_y;
     int key_collected;
 } Map;

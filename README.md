@@ -1,12 +1,8 @@
 # Dungeon-Crawler
 
 # Objective 
-Move your player around the dungeon, kill all the enemies and find the exit to finish the game.
-
-# Components 
-1. Map (map.c)
-2. Player (player.c)
-3. Enemy (enemy.c)
+You spawn into a starting room. Explore the dungeon, find the key to the door and unlock the door to go to the next level, all while escaping the enemies!
 
 # Setup
-Clone this repo locally, and enter "make run" to start the game. 
+Clone this repository locally using "git clone https://github.com/penguinz11/Dungeon-Crawler.git".
+Then do "make run" to start the game.
