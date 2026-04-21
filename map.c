@@ -30,7 +30,7 @@ void split_node(Map *m, int x, int y, int w, int h, int depth) {
 
             for (int i = ry; i < ry + rh; i++) {
                 for (int j = rx; j < rx + rw; j++) {
-                    m->grid[i][j] = '.';
+                    m->grid[i][j] = 'R'; // R for room floor
                 }
             }
 
@@ -66,6 +66,11 @@ void init_map(Map *m) {
             m->grid[y][x] = 'X';
         }
     }
+    // initialize all rooms as unexplored
+    for (int i = 0; i < MAX_ROOMS; i++) {
+        m->explored[i] = 0;
+    }
+    m->key_collected = 0;
     split_node(m, 0, 0, WORLD_WIDTH, WORLD_HEIGHT, 4);
 
     int max_dist = 0;
@@ -109,6 +114,34 @@ void init_map(Map *m) {
         m->door_x = door_x;
         // dont store door on grid, only draw it
     }
+
+    // spawn key in a random room away from player and door
+    if (m->room_count > 2) {
+        int key_room = -1;
+        // try to find a room that's not the starting or door room
+        for (int attempt = 0; attempt < 100; attempt++) {
+            int r = rand() % m->room_count;
+            if (r != 0 && r != m->target_room) {
+                key_room = r;
+                break;
+            }
+        }
+        // if all random attempts were start or door room, find first valid one
+        if (key_room == -1) {
+            for (int r = 1; r < m->room_count; r++) {
+                if (r != m->target_room) {
+                    key_room = r;
+                    break;
+                }
+            }
+        }
+        // spawn key at random position in the chosen room
+        if (key_room != -1) {
+            Room key_room_data = m->rooms[key_room];
+            m->key_y = key_room_data.y + (rand() % key_room_data.h);
+            m->key_x = key_room_data.x + (rand() % key_room_data.w);
+        }
+    }
 }
 
 void draw_map(Map *m) {
@@ -122,20 +155,70 @@ void draw_map(Map *m) {
             if (worldY >= 0 && worldY < WORLD_HEIGHT && worldX >= 0 && worldX < WORLD_WIDTH) {
                 char tile = m->grid[worldY][worldX];
 
-                if (tile == 'X') {
+                // check if this tile is in an explored room
+                int in_explored_room = 0;
+                for (int r = 0; r < m->room_count; r++) {
+                    Room room = m->rooms[r];
+                    if (worldX >= room.x && worldX < room.x + room.w &&
+                        worldY >= room.y && worldY < room.y + room.h) {
+                        if (m->explored[r]) {
+                            in_explored_room = 1;
+                        }
+                        break;
+                    }
+                }
+
+                // check for door first (highest priority)
+                if (worldY == m->door_y && worldX == m->door_x && in_explored_room) {
+                    // door only visible in explored rooms
+                    attron(COLOR_PAIR(2) | A_BOLD);
+                    mvaddch(y + 1, x * 2, 'D');
+                    attroff(COLOR_PAIR(2) | A_BOLD);
+                } else if (worldY == m->key_y && worldX == m->key_x && in_explored_room && !m->key_collected) {
+                    // key only visible in explored rooms if not collected
+                    attron(COLOR_PAIR(5));
+                    mvaddch(y + 1, x * 2, 'K');
+                    attroff(COLOR_PAIR(5));
+                } else if (tile == '.') {
+                    // check if corridor is adjacent to unexplored room
+                    int hide_corridor = 0;
+                    for (int r = 0; r < m->room_count; r++) {
+                        if (!m->explored[r]) {
+                            Room room = m->rooms[r];
+                            // check if corridor is adjacent to this unexplored room
+                            if (worldX >= room.x - 1 && worldX < room.x + room.w + 1 &&
+                                worldY >= room.y - 1 && worldY < room.y + room.h + 1) {
+                                hide_corridor = 1;
+                                break;
+                            }
+                        }
+                    }
+                    if (!hide_corridor) {
+                        // corridor - visible
+                        attron(A_DIM);
+                        mvaddch(y + 1, x * 2, '.');
+                        attroff(A_DIM);
+                    } else {
+                        // corridor near unexplored room - hide
+                        mvaddch(y + 1, x * 2, ' ');
+                    }
+                } else if (tile == 'R' && in_explored_room) {
+                    // explored room floor
+                    attron(A_DIM);
+                    mvaddch(y + 1, x * 2, '.');
+                    attroff(A_DIM);
+                } else if (tile == 'X') {
                     // wall
                     attron(COLOR_PAIR(3) | A_BOLD); 
                     mvaddch(y + 1, x * 2, tile);
                     attroff(COLOR_PAIR(3) | A_BOLD);
-                } else if (worldY == m->door_y && worldX == m->door_x) {
-                    // door
-                    attron(COLOR_PAIR(2) | A_BOLD);
-                    mvaddch(y + 1, x * 2, 'D');
-                    attroff(COLOR_PAIR(2) | A_BOLD);
+                } else if (tile == 'R' && !in_explored_room) {
+                    // unexplored room - show as blank
+                    mvaddch(y + 1, x * 2, ' ');
                 } else {
-                    // floor
+                    // other tiles in explored areas
                     attron(A_DIM);
-                    mvaddch(y + 1, x * 2, '.');
+                    mvaddch(y + 1, x * 2, tile);
                     attroff(A_DIM);
                 }
             } else {

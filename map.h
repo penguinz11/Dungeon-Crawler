@@ -5,7 +5,7 @@
 #define WORLD_WIDTH 200
 
 #define MAX_ROOMS 30
-#define MIN_ROOM_SIZE 4
+#define MIN_ROOM_SIZE 10
 
 typedef struct {
     int x, y, w, h;
@@ -17,6 +17,9 @@ typedef struct {
     int room_count;
     int target_room;
     int door_y, door_x;
+    int explored[MAX_ROOMS];
+    int key_x, key_y;
+    int key_collected;
 } Map;
 
 void connect_points(Map *m, int x1, int y1, int x2, int y2);

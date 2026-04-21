@@ -1,4 +1,5 @@
 #include <ncurses.h>
+#include "enemy.h"
 #include "player.h"
 #include "map.h"
 #include "cam.h"
@@ -13,6 +14,7 @@ void init_player(Player *p, int y, int x) {
     p->xp = 0;
     p->xp_cap = 10;
     p->level = 1;
+    p->has_key = 0;
 }
 
 void move_player(Player *p, int input, Map *m) {
@@ -27,7 +29,7 @@ void move_player(Player *p, int input, Map *m) {
     }
 
     if (nextY >= 0 && nextY < WORLD_HEIGHT && nextX >= 0 && nextX < WORLD_WIDTH) {
-        if (m->grid[nextY][nextX] == '.') {
+        if (m->grid[nextY][nextX] == '.' || m->grid[nextY][nextX] == 'R') {
             p->y = nextY;
             p->x = nextX;
         }
