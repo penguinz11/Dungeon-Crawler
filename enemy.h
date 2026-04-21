@@ -9,11 +9,16 @@ typedef struct enemy {
     int hp;
     int max_hp;
     char symbol;
+    int damage;
+    int allowed_to_move;
+    int attack_cooldown;
 } enemy;
 
 void init_enemy(enemy *e, int y, int x);
 void move_enemy(enemy *e, Player *p, Map *m);
 int damage_enemy(enemy *e, int damage);
 void draw_enemy(enemy *e, Map *m);
+
+void spawn_enemies(int max_enemies, enemy *enemies, Map *m);
 
 #endif

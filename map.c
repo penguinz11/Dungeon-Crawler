@@ -26,7 +26,7 @@ void split_node(Map *m, int x, int y, int w, int h, int depth) {
             int rx = x + (rand() % (w - rw - 1)) + 1;
             int ry = y + (rand() % (h - rh - 1)) + 1;
 
-            m->rooms[m->room_count] = (Room){rx, ry, rw, rh};
+            m->rooms[m->room_count] = (Room){rx, ry, rw, rh, 0};
 
             for (int i = ry; i < ry + rh; i++) {
                 for (int j = rx; j < rx + rw; j++) {
@@ -87,6 +87,22 @@ void init_map(Map *m) {
                 m->target_room = i;
             }
         }
+    }
+
+    // Calculate distance from each room to target room
+    Room target = m->rooms[m->target_room];
+    int target_cx = target.x + target.w / 2;
+    int target_cy = target.y + target.h / 2;
+    int max_depth = WORLD_HEIGHT * WORLD_HEIGHT + WORLD_WIDTH * WORLD_WIDTH;
+
+    for (int i = 0; i < m->room_count; i++) {
+        Room r = m->rooms[i];
+        int dx = (r.x + r.w / 2) - target_cx;
+        int dy = (r.y + r.h / 2) - target_cy;
+        int dist = dx * dx + dy * dy;
+        float norm = (float)dist / max_depth;
+        float inv = 1.0f - norm;
+        m->rooms[i].depth = (int)(inv * 5) + 1;
     }
 
     // place door at farthest point in target room

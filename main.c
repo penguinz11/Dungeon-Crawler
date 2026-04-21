@@ -9,7 +9,7 @@
 #include "combat.h"
 #include "cam.h"
 
-#define MAX_ENEMIES 50
+#define MAX_ENEMIES 180
 
 void handle_resize(int sig) {
     int height, width;
@@ -59,31 +59,26 @@ int main() {
     int message_timer = 0;
 
     int move_cooldown = 0;
+    int enemy_move_cooldown = 0;
 
-    int enemy_count = 12 + level * 2;
-    if (enemy_count > MAX_ENEMIES) enemy_count = MAX_ENEMIES;
     enemy enemies[MAX_ENEMIES];
 
     int start_y = myMap.rooms[0].y + (myMap.rooms[0].h / 2);
     int start_x = myMap.rooms[0].x + (myMap.rooms[0].w / 2);
     init_player(&myPlayer, start_y, start_x);
 
-    for(int i = 0; i < enemy_count; i++) {
-        int r = rand() % myMap.room_count;
-        int ey = myMap.rooms[r].y + (rand() % myMap.rooms[r].h);
-        int ex = myMap.rooms[r].x + (rand() % myMap.rooms[r].w);
-        init_enemy(&enemies[i], ey, ex);
-    }
+    spawn_enemies(MAX_ENEMIES, enemies, &myMap);
 
     int ch;
     while (1) {
         ch = getch();
         if (move_cooldown > 0) move_cooldown--;
+        if (enemy_move_cooldown > 0) enemy_move_cooldown--;
 
         if (ch == 'q' || ch == 'Q') break;
         
         if (ch == ' ') {
-            player_melee_attack(&myPlayer, enemies, enemy_count);
+            player_melee_attack(&myPlayer, enemies, MAX_ENEMIES);
         } else if (ch != ERR && move_cooldown == 0) { 
             move_player(&myPlayer, ch, &myMap);
             move_cooldown = 5;
@@ -125,8 +120,6 @@ int main() {
                 level++;
                 strcpy(message, "Entering next level...");
                 message_timer = 80;  // 4 seconds for level transition
-                enemy_count = 12 + level * 2;
-                if (enemy_count > MAX_ENEMIES) enemy_count = MAX_ENEMIES;
 
                 init_map(&myMap);
 
@@ -145,12 +138,7 @@ int main() {
                 myPlayer.xp = saved_xp;
                 myPlayer.xp_cap = saved_xp_cap;
 
-                for(int i = 0; i < enemy_count; i++) {
-                    int r = rand() % myMap.room_count;
-                    int ey = myMap.rooms[r].y + (rand() % myMap.rooms[r].h);
-                    int ex = myMap.rooms[r].x + (rand() % myMap.rooms[r].w);
-                    init_enemy(&enemies[i], ey, ex);
-                }
+                spawn_enemies(MAX_ENEMIES, enemies, &myMap);
             }
         } else {
             if (myPlayer.has_key == 0) {
@@ -158,15 +146,27 @@ int main() {
             }
         }
 
-        if (myPlayer.hp <= 0) {
-            strcpy(message, "Game Over! You died.");
-            break;
+        // if (myPlayer.hp <= 0) {
+        //     strcpy(message, "Game Over! You died.");
+        //     break;
+        // }
+
+        if(enemy_move_cooldown == 0) {
+            for(int i = 0; i < MAX_ENEMIES;i++) {
+                move_enemy(&enemies[i], &myPlayer, &myMap);
+            }
+            enemy_move_cooldown = 10;
+        }
+
+        for(int i = 0;i < MAX_ENEMIES;i++) {
+            if(enemies[i].attack_cooldown > 0) {enemies[i].attack_cooldown--;}
+            else {try_to_damage_player(&enemies[i], &myPlayer, enemies[i].damage, &myMap);}
         }
 
         erase();
         draw_map(&myMap);
         
-        for(int i = 0;i < enemy_count; i++) {
+        for(int i = 0;i < MAX_ENEMIES; i++) {
             draw_enemy(&enemies[i], &myMap);
         }
         

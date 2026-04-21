@@ -9,6 +9,7 @@
 
 typedef struct {
     int x, y, w, h;
+    int depth;
 } Room;
 
 typedef struct {

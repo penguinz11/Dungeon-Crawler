@@ -3,6 +3,7 @@
 #include "enemy.h"
 #include "cam.h"
 #include "player.h"
+#include "combat.h"
 
 void init_enemy(enemy *e, int y, int x) {
     e->x = x;
@@ -10,6 +11,9 @@ void init_enemy(enemy *e, int y, int x) {
     e->max_hp = 5;
     e->hp = e->max_hp;
     e->symbol = 'E';
+    e->allowed_to_move = 1;
+    e->damage = 10;
+    e->attack_cooldown = 50;
 }
 
 void draw_enemy(enemy *e, Map *m) {
@@ -39,8 +43,8 @@ void draw_enemy(enemy *e, Map *m) {
 }
 
 void move_enemy(enemy *e, Player *p, Map *m) {
-    // Only move if enemy is alive
     if (e->hp <= 0) return;
+    if (e->allowed_to_move == 0) {return;}
     
     // Check if enemy is in an explored room - only chase if visible
     int in_explored_room = 0;
@@ -56,6 +60,7 @@ void move_enemy(enemy *e, Player *p, Map *m) {
     }
     
     if (!in_explored_room) return; // Don't move if not in explored area
+
     
     // Simple chasing: move towards player
     int dx = p->x - e->x;
@@ -64,22 +69,27 @@ void move_enemy(enemy *e, Player *p, Map *m) {
     // Determine primary direction to move
     int move_x = 0, move_y = 0;
     
-    if (abs(dx) > abs(dy)) {
+    if (abs(dx) >= abs(dy)) {
         // Move horizontally towards player
         move_x = (dx > 0) ? 1 : -1;
     } else if (abs(dy) > abs(dx)) {
         // Move vertically towards player
         move_y = (dy > 0) ? 1 : -1;
-    } else {
-        // Equal distance, randomly choose direction
-        if (rand() % 2) {
-            move_x = (dx > 0) ? 1 : -1;
-        } else {
-            move_y = (dy > 0) ? 1 : -1;
+    }
+
+    if(abs(dx) <= 1 && abs(dy) <= 1) {
+        move_x = 0; move_y = 0;
+        e->attack_cooldown = 50;
+        e->allowed_to_move = 0;
+        for(int i = -1; i <= 1; i++) {
+            for(int j = -1;j <= 1;j++) {
+                if(m->grid[e->y + i][e->x + j] == '.') {
+                    m->grid[e->y + i][e->x + j] = '^';
+                }
+            }
         }
     }
-    
-    // Try to move
+        
     int new_x = e->x + move_x;
     int new_y = e->y + move_y;
     
@@ -112,4 +122,25 @@ int is_enemy_at(enemy *enemies, int count, int x, int y) {
             return 1;
     }
     return 0;
+}
+
+void spawn_enemies(int max_enemies, enemy *enemies, Map *m) {
+    int k = 0;
+
+    for (int i = 1; i < m->room_count; i++) {
+        if (k >= max_enemies) break;
+
+        Room *r = &m->rooms[i];
+
+        for (int j = 0; j < r->depth; j++) {
+            if (k >= max_enemies) break;
+
+            int x = r->x + 1 + rand() % (r->w - 2);
+            int y = r->y + 1 + rand() % (r->h - 2);
+
+
+            init_enemy(&enemies[k], y, x);
+            k++;
+        }
+    }
 }

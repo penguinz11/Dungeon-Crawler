@@ -4,6 +4,7 @@
 #include "player.h"
 #include "enemy.h"
 
-void player_melee_attack(Player *p, enemy enemies[], int enemy_count);
+void player_melee_attack(Player *p, enemy *enemies, int enemy_count);
+void try_to_damage_player(enemy *e, Player *p, int damage, Map *m);
 
 #endif
