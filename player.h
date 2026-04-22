@@ -14,11 +14,13 @@ typedef struct {
     int xp, xp_cap;
     int level;
     int has_key;
+    int score;
 } Player;
 
 void init_player(Player *p, int y, int x);
 void move_player(Player *p, int input, Map *m);
 void draw_player(Player *p);
 void gain_xp(Player *p);
+void add_score(Player *p, int points);
 
 #endif

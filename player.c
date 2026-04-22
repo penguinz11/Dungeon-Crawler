@@ -15,6 +15,7 @@ void init_player(Player *p, int y, int x) {
     p->xp_cap = 10;
     p->level = 1;
     p->has_key = 0;
+    p->score = 0;
 }
 
 void move_player(Player *p, int input, Map *m) {
@@ -53,4 +54,8 @@ void gain_xp(Player *p) {
         p->level++;
         p->melee_damage++;
     }
+}
+
+void add_score(Player *p, int points) {
+    p->score += points;
 }

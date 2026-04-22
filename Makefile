@@ -4,7 +4,7 @@ LIBS = -lncurses
 
 #define target and its dependencies
 TARGET = dungeon
-SRCS = main.c player.c map.c enemy.c cam.c combat.c
+SRCS = main.c player.c map.c enemy.c cam.c combat.c leaderboard.c
 OBJS = $(SRCS:.c=.o)
 
 all: $(TARGET)

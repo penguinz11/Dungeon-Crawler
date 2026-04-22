@@ -14,6 +14,7 @@ void player_melee_attack(Player *p, enemy *enemies, int enemy_count) {
         if(dx <= 1 && dy <= 1) {
             if(damage_enemy(&enemies[i], p->melee_damage) == 1) {
                 gain_xp(p);
+                add_score(p, 5);//enemy kill
             }
         }
     }
